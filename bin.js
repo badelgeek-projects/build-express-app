@@ -89,9 +89,7 @@ const displayHelp = () => {
 
 const cleanNpxCache = () => {
    if (PROGRAM_NAME.includes('_npx')) {
-      log.step('Cleaning cache');
       fs.rmSync(NPX_JSON_PATH);
-      log.ok();
    }
 }
 
@@ -106,7 +104,7 @@ const runCommand = (command, message) => {
          execSync(command, { stdio: 'inherit'});
       } else {
          log.step(message);
-         let res = execSync(command);
+         let res = execSync(command, { stdio: '', stderr: ''});
          
       }
    }
@@ -223,7 +221,7 @@ for (let i = 2; i < process.argv.length - 1; i++) {
 }
 
 // CLONNE REPO INTO PROJECT FOLDER
-const gitCloneCommand = `git clone --depth 1 git@github.com:badelgeek-boilerplate/nodejs-express-${OPTIONS['--struct'].value}.git ${PROJECT_NAME}`;
+const gitCloneCommand = `git clone --quiet --depth 1 git@github.com:badelgeek-boilerplate/nodejs-express-${OPTIONS['--struct'].value}.git ${PROJECT_NAME}`;
 runCommand(gitCloneCommand, 'Create App');
 
 // Change Project name in package.json
@@ -245,7 +243,7 @@ const rmGitCommand = `cd ${PROJECT_NAME} && rm -rf .git/`;
 runCommand(rmGitCommand, 'clean folder');
 
 // Start Express Server
-log.ok('Configuration Finished, starting server...');
+log.program('Configuration Finished, starting server...');
 const startCommand = `cd ${PROJECT_NAME} && nodemon apps.js`
 runCommand(startCommand,'stdout');
 
