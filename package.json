@@ -1,6 +1,6 @@
 {
    "name": "build-express-app",
-   "version": "0.0.20",
+   "version": "0.1.0",
    "description": "Build Node.js + Express App",
    "bin": "./bin.js",
    "scripts": {
