@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 // TODO
-// remove .git
-// chalk colors
-// fatorize console.log
-// change name project in package.json
 // commit + publish command script
-// start node/nodemon
+// display npm list
+// common files ? submodules ?
+// git repo : public ?
+// test windows ?
+// test if nodemon is installed ?
 
 //-------------
 // REQUIRE
@@ -133,13 +133,6 @@ const log = {
    warning: msg => log.c(chalk.bold.yellow(msg ? '[WARNING] ' + msg : '[WARNING] ')),
 }
 
-// log.info('info')
-// log.error('erreur');
-// log.warning('warning');
-// log.ok('ok')
-// log.step('Step');
-// log.ok();
-
 //-------------
 // MAIN
 //-------------
@@ -177,8 +170,6 @@ if (fs.existsSync(PROJECT_PATH)) {
    log.error(`project folder ${PROJECT_NAME} already exists !!`);
    process.exit(3);
 }
-
-
 
 
 // Program call Parameters
@@ -254,7 +245,7 @@ const rmGitCommand = `cd ${PROJECT_NAME} && rm -rf .git/`;
 runCommand(rmGitCommand, 'clean folder');
 
 // Start Express Server
-log.ok('Configuration Finished, starting server');
+log.ok('Configuration Finished, starting server...');
 const startCommand = `cd ${PROJECT_NAME} && nodemon apps.js`
 runCommand(startCommand,'stdout');
 
