@@ -198,10 +198,10 @@ runCommand(npmInstallCommand);
 const mvEnvCommand = `cd ${PROJECT_NAME} && mv .env.template .env`
 runCommand(mvEnvCommand);
 
-setTimeout(() => {
-   console.log('START');
-   runCommand(`cd ${PROJECT_NAME} && nodemon apps.js`);
-},1000);
+// setTimeout(() => {
+//    console.log('START');
+//    runCommand(`cd ${PROJECT_NAME} && nodemon apps.js`);
+// },1000);
 
 
 
