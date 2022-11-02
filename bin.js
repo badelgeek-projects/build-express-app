@@ -1,4 +1,13 @@
 #!/usr/bin/env node
+
+// TODO
+// remove .git
+// chalk colors
+// fatorize console.log
+// change name project in package.json
+// commit + publish command script
+// start node/nodemon
+
 //-------------
 // REQUIRE
 //-------------
