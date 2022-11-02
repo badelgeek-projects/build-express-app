@@ -1,0 +1,11 @@
+{
+   "name": "build-express-app",
+   "version": "0.0.19",
+   "description": "Build Node.js + Express App",
+   "bin": "./bin.js",
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+   },
+   "author": "",
+   "license": "ISC"
+}
