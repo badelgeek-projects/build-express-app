@@ -15,29 +15,33 @@ const fs = require('fs');
 const path = require('path');
 const execSync = require('child_process').execSync;
 const chalk = require('chalk');
-const { exit } = require('process');
+const exit = require('process').exit;
 
 //-------------
 // DECLARATIONS
 //-------------
-const DEBUG = false;
-const NPX_JSON_PATH = path.join(__dirname, 'package.json');
+const NPX_PATH = __dirname;
+const NPX_TEMPLATES_PATH = path.join(NPX_PATH, 'templates');
+const NPX_JSON_PATH = path.join(NPX_PATH, 'package.json');
 const NPX_JSON_DATA = require(NPX_JSON_PATH);
 const NPX_NAME = NPX_JSON_DATA.name;
 const NPX_VERSION = NPX_JSON_DATA.version;
-const PROJECT_NAME = process.argv[process.argv.length - 1];
-const PROJECT_PATH = path.join(process.env.PWD, PROJECT_NAME);
-const PROJECT_JSON = path.join(PROJECT_PATH, 'package.json');
-const PROJECT_ENV_FILE = path.join(PROJECT_PATH, '.env.template');
-const PROJECT_PORT = 3000;
-const PROJECT_ENV_NAME = 'DEVELOPMENT';
-
-const EXECUTABLE = process.argv[0];
+const APP_NAME = process.argv[process.argv.length - 1];
+const APP_PATH = path.join(process.env.PWD, APP_NAME);
+const APP_JSON = path.join(APP_PATH, 'package.json');
+const APP_ENV_FILE = path.join(APP_PATH, '.env.template');
+const APP_PORT = 3000;
+const APP_ENV_NAME = 'DEVELOPMENT';
 const PROGRAM_NAME = process.argv[1];
 const FIRST_ARGUMENT = process.argv[2];
 
-console.log("⏩ ~ EXECUTABLE", EXECUTABLE);
-process.exit(99);
+const NPX_INDEX_EJS = path.join(NPX_TEMPLATES_PATH, 'views/index.ejs');
+const APP_INDEX_EJS = path.join(APP_PATH, 'views/index.ejs');
+
+const NPX_README = path.join(NPX_TEMPLATES_PATH, 'README.md');
+const APP_README = path.join(APP_PATH, 'README.md');
+
+
 
 const OPTIONS = {
    'help': {
@@ -47,12 +51,12 @@ const OPTIONS = {
       helpText: 'Print version',
    },
 
-   '--struct': {
+   '--folder': {
       isSet: false,
       needValue: true,
       required: true,
       value: 'basic',
-      validValue: ['basic', 'mvc'],
+      validValue: ['basic', 'middleware'],
       helpText: 'type of folder structure',
    },
 
@@ -60,7 +64,7 @@ const OPTIONS = {
       isSet: false,
       needValue: true,
       required: true,
-      value: PROJECT_PORT,
+      value: APP_PORT,
       validValue: 'number',
       helpText: 'Server Port number',
    },
@@ -69,7 +73,7 @@ const OPTIONS = {
       isSet: false,
       needValue: true,
       required: true,
-      value: PROJECT_ENV_NAME,
+      value: APP_ENV_NAME,
       validValue: 'string',
       helpText: 'Environment name',
    },
@@ -87,7 +91,14 @@ const displayHelp = () => {
       console.log('%s\t: %s,', option, OPTIONS[option].helpText, OPTIONS[option].validValue);
    }
    // Exit after displaying help
-   process.exit(1);
+   exit(1);
+}
+
+const checkOS = (os) => {
+   if (os === 'win32' && process.env.USER !== 'abdelkarimo') {
+      log.program('OS not supported yet : coming soon...');
+      exit(0);
+   }
 }
 
 const cleanNpxCache = () => {
@@ -100,32 +111,38 @@ const displayVersion = () => {
    console.log(`version ${NPX_VERSION}`);
 }
 
-const runCommand = (command, message) => {
+const runCommand = ({ command, message = false, stdout = false }) => {
    //execSync(command, { stdio: 'inherit' });
    try {
-      if(message === 'stdout') {
-         execSync(command, { stdio: 'inherit'});
-      } else {
+      if (message) {
          log.step(message);
-         let res = execSync(command, { stdio: '', stderr: ''});
-         
+      }
+
+      if (stdout) {
+         execSync(command, { stdio: 'inherit' });
+      } else {
+         let res = execSync(command);
       }
    }
    catch (err) {
       log.error(err.stderr.toString());
-      process.exit(3);
+      exit(3);
    }
-   log.ok();
+
+   if (message) {
+      log.ok();
+   }
 }
 
-const replaceInFile = (originalRegex, newText, file) => {
+const replaceInFile = ({ file, originalRegex, newText, outputFile = file }) => {
    let data = fs.readFileSync(file, 'utf8').replace(originalRegex, newText);
-   fs.writeFileSync(file, data, 'utf8');
+   fs.writeFileSync(outputFile, data, 'utf8');
 }
 
 const log = {
+   DEBUG: false,
    c: console.log,
-   debug: msg => (DEBUG) ? log.c(msg) : '',
+   debug: msg => (log.DEBUG) ? log.c(msg) : '',
    error: msg => log.c(chalk.bold.red(msg ? '[ERROR] ' + msg : '[ERROR] ')),
    info: msg => log.c(msg),
    ok: msg => log.c(chalk.bold.green(msg ? '[OK] ' + msg : '[OK] ')),
@@ -134,13 +151,20 @@ const log = {
    warning: msg => log.c(chalk.bold.yellow(msg ? '[WARNING] ' + msg : '[WARNING] ')),
 }
 
+const handleViews = () => {
+
+}
+
 //-------------
 // MAIN
 //-------------
-// Clean cahce to force last release only
+// Clean cache to force last release only
 cleanNpxCache();
 
-log.program('\nCreate NODE.JS + EXPRESS boilerplate project folder');
+// Check OS
+checkOS(process.platform);
+
+log.program('\nCreate NODE.JS + EXPRESS boilerplate app');
 log.program(`${NPX_NAME} : version ${NPX_VERSION}\n`);
 
 // HELP
@@ -151,25 +175,25 @@ if (FIRST_ARGUMENT === 'help') {
 // VERSION
 if (FIRST_ARGUMENT === '--version' || FIRST_ARGUMENT === '-v') {
    displayVersion();
-   process.exit(0);
+   exit(0);
 }
 
 // Validate Project Name 
-if (process.argv.length <= 2 ) {
+if (process.argv.length <= 2) {
    log.error('No Project name');
-   process.exit(3);
+   exit(3);
 }
 
 // Validate Project Name 
-if (PROJECT_NAME[0] === '-') {
+if (APP_NAME[0] === '-') {
    log.error('ERROR : Bad Project name');
-   process.exit(3);
+   exit(3);
 }
 
 // Test folder
-if (fs.existsSync(PROJECT_PATH)) {
-   log.error(`project folder ${PROJECT_NAME} already exists !!`);
-   process.exit(3);
+if (fs.existsSync(APP_PATH)) {
+   log.error(`project folder ${APP_NAME} already exists !!`);
+   exit(3);
 }
 
 
@@ -195,9 +219,9 @@ for (let i = 2; i < process.argv.length - 1; i++) {
          let valueTypeOf = typeof (option.value);
          option.value = process.argv[i];
 
-         if (option.value === PROJECT_NAME) {
+         if (option.value === APP_NAME) {
             log.error('no project name !');
-            process.exit(3);
+            exit(3);
          }
 
          // If typeof string => check valid typeof value if number
@@ -205,50 +229,95 @@ for (let i = 2; i < process.argv.length - 1; i++) {
          if (typeof (option.validValue) === 'string') {
             if (option.validValue === 'number' && isNaN(+option.value)) {
                log.error(`incorrect value ${argument} ${option.value} (expected ${option.validValue})`);
-               process.exit(3);
+               exit(3);
             }
          } else {
             if (option.validValue.indexOf(option.value) < 0) {
                log.error(`incorrect ${option.value} for ${argument}`);
-               process.exit(3);
+               exit(3);
             }
 
          }
          option.isSet = true;
 
       }
-      // console.debug("⏩ ~ option.value", option.value);
+
    } else {
       displayHelp();
    }
 }
 
 // CLONNE REPO INTO PROJECT FOLDER
-const gitCloneCommand = `git clone --quiet --depth 1 git@github.com:badelgeek-boilerplate/nodejs-express-${OPTIONS['--struct'].value}.git ${PROJECT_NAME}`;
-runCommand(gitCloneCommand, 'Create App');
+runCommand({
+   command: `git clone --quiet --depth 1 git@github.com:badelgeek-boilerplate/nodejs-express-${OPTIONS['--folder'].value}.git ${APP_NAME}`,
+   message: 'Create App',
+});
 
-// Change Project name in package.json
-const npmPkgSetCommand = `cd ${PROJECT_NAME} && npm pkg set name='${PROJECT_NAME}'`;
-runCommand(npmPkgSetCommand, 'Set App name');
+// Change Project name in package.
+runCommand({
+   command: `cd ${APP_NAME} && npm pkg set name='${APP_NAME}'`,
+   message: 'App Setup',
+});
+
 
 // Install dependencies
-const npmInstallCommand = `cd ${PROJECT_NAME} && npm install`;
-runCommand(npmInstallCommand, 'Npm install');
+runCommand({
+   command: `cd ${APP_NAME} && npm install`,
+   message: 'Npm setup',
+});
 
 // Configure Env file
-replaceInFile(/PORT=.*\b/, `PORT=${OPTIONS['--port'].value}`, PROJECT_ENV_FILE);
-replaceInFile(/ENV=.*\b/, `ENV=${OPTIONS['--env'].value}`, PROJECT_ENV_FILE);
-const mvEnvCommand = `cd ${PROJECT_NAME} && mv .env.template .env`;
-runCommand(mvEnvCommand, 'Configure env file');
+replaceInFile({
+   file: APP_ENV_FILE,
+   originalRegex: /PORT=.*\b/,
+   newText: `PORT=${OPTIONS['--port'].value}`,
+});
+
+replaceInFile({
+   file: APP_ENV_FILE,
+   originalRegex: /ENV=.*\b/,
+   newText: `ENV=${OPTIONS['--env'].value}`
+});
+
+runCommand({
+   message: 'ENV setup',
+   command: `cd ${APP_NAME} && mv .env.template .env`,
+});
+
+// README Template
+log.step('Readme Setup');
+replaceInFile({
+   file: NPX_README,
+   originalRegex: /APP_NAME/g,
+   newText: `${APP_NAME}`,
+   outputFile: APP_README
+});
+log.ok();
+
+// Configure Views
+log.step('Views Setup');
+replaceInFile({
+   file: NPX_INDEX_EJS,
+   originalRegex: /APP_NAME/g,
+   newText: `${APP_NAME}`,
+   outputFile: APP_INDEX_EJS
+});
+log.ok();
 
 // clean repo .git
-const rmGitCommand = `cd ${PROJECT_NAME} && rm -rf .git/`;
-runCommand(rmGitCommand, 'clean folder');
+runCommand({
+   message: 'Cleaning',
+   command: `cd ${APP_NAME} && rm -rf .git/`,
+});
 
 // Start Express Server
 log.program('Configuration Finished, starting server...');
-const startCommand = `cd ${PROJECT_NAME} && nodemon apps.js`
-runCommand(startCommand,'stdout');
+runCommand({
+   command: `cd ${APP_NAME} && nodemon apps.js`,
+   stdout: true,
+});
+
+
 
 
 
