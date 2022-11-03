@@ -84,12 +84,18 @@ const OPTIONS = {
 //-------------
 const displayHelp = () => {
    //console.clear();
-   console.log('## HELP ##\n');
+   log.program(`default : ${NPX_NAME} app-name`);
+   log.program(`options : ${NPX_NAME} options app-name`);
 
    // Display help
    for (let option in OPTIONS) {
-      console.log('%s\t: %s,', option, OPTIONS[option].helpText, OPTIONS[option].validValue);
+      let required = OPTIONS[option].required ? '<value>' : '';
+      let validValue = OPTIONS[option].validValue ? OPTIONS[option].validValue : '';
+      let defaultValue = OPTIONS[option].value ? `(default: ${OPTIONS[option].value})` : '';
+
+      console.log('\t%s %s\t: %s %s', option, required, OPTIONS[option].helpText, validValue, defaultValue );
    }
+   log.c();
    // Exit after displaying help
    exit(1);
 }
@@ -152,7 +158,14 @@ const log = {
 }
 
 const handleViews = () => {
-
+   log.step('Views Setup');
+   replaceInFile({
+      file: NPX_INDEX_EJS,
+      originalRegex: /APP_NAME/g,
+      newText: `${APP_NAME}`,
+      outputFile: APP_INDEX_EJS
+   });
+   log.ok();
 }
 
 //-------------
@@ -162,7 +175,7 @@ const handleViews = () => {
 cleanNpxCache();
 
 // Check OS
-checkOS(process.platform);
+//checkOS(process.platform);
 
 log.program('\nCreate NODE.JS + EXPRESS boilerplate app');
 log.program(`${NPX_NAME} : version ${NPX_VERSION}\n`);
@@ -181,6 +194,7 @@ if (FIRST_ARGUMENT === '--version' || FIRST_ARGUMENT === '-v') {
 // Validate Project Name 
 if (process.argv.length <= 2) {
    log.error('No Project name');
+   displayHelp();
    exit(3);
 }
 
@@ -295,33 +309,22 @@ replaceInFile({
 log.ok();
 
 // Configure Views
-log.step('Views Setup');
-replaceInFile({
-   file: NPX_INDEX_EJS,
-   originalRegex: /APP_NAME/g,
-   newText: `${APP_NAME}`,
-   outputFile: APP_INDEX_EJS
-});
-log.ok();
+handleViews();
 
 // clean repo .git
-runCommand({
-   message: 'Cleaning',
-   command: `cd ${APP_NAME} && rm -rf .git/`,
-});
+log.step('Cleaning');
+fs.rmSync(`${APP_PATH}/.git/`, { recursive: true, force: true });
+log.ok();
+
+// runCommand({
+//    message: 'Cleaning',
+//    command: `cd ${APP_NAME} && rm -rf .git/`,
+// });
 
 // Start Express Server
 log.program('Configuration Finished, starting server...');
 runCommand({
-   command: `cd ${APP_NAME} && nodemon apps.js`,
+   command: `cd ${APP_NAME} && node app.js`,
    stdout: true,
 });
-
-
-
-
-
-
-
-
 
