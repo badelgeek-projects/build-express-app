@@ -15,6 +15,7 @@ const fs = require('fs');
 const path = require('path');
 const execSync = require('child_process').execSync;
 const chalk = require('chalk');
+const { exit } = require('process');
 
 //-------------
 // DECLARATIONS
@@ -31,10 +32,12 @@ const PROJECT_ENV_FILE = path.join(PROJECT_PATH, '.env.template');
 const PROJECT_PORT = 3000;
 const PROJECT_ENV_NAME = 'DEVELOPMENT';
 
+const EXECUTABLE = process.argv[0];
 const PROGRAM_NAME = process.argv[1];
 const FIRST_ARGUMENT = process.argv[2];
 
-
+console.log("⏩ ~ EXECUTABLE", EXECUTABLE);
+process.exit(99);
 
 const OPTIONS = {
    'help': {
