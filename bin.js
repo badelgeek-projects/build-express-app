@@ -27,7 +27,7 @@ const NPX_JSON_DATA = require(NPX_JSON_PATH);
 const NPX_NAME = NPX_JSON_DATA.name;
 const NPX_VERSION = NPX_JSON_DATA.version;
 const APP_NAME = process.argv[process.argv.length - 1];
-const APP_PATH = path.join(process.env.PWD, APP_NAME);
+const APP_PATH = path.join(process.cwd(), APP_NAME);
 const APP_JSON = path.join(APP_PATH, 'package.json');
 const APP_ENV_FILE = path.join(APP_PATH, '.env.template');
 const APP_PORT = 3000;
@@ -268,10 +268,18 @@ runCommand({
 });
 
 // Change Project name in package.
-runCommand({
-   command: `cd ${APP_NAME} && npm pkg set name='${APP_NAME}'`,
-   message: 'App Setup',
+// runCommand({
+//    command: `cd ${APP_NAME} && npm pkg set name='${APP_NAME}'`,
+//    message: 'App Setup',
+// });
+
+log.step('App Setup');
+replaceInFile({
+   file: APP_JSON,
+   originalRegex: /"name": ".*,/,
+   newText: `"name": "${APP_NAME}",`,
 });
+log.ok();
 
 
 // Install dependencies
@@ -281,6 +289,7 @@ runCommand({
 });
 
 // Configure Env file
+log.step('Env Setup');
 replaceInFile({
    file: APP_ENV_FILE,
    originalRegex: /PORT=.*\b/,
@@ -293,10 +302,13 @@ replaceInFile({
    newText: `ENV=${OPTIONS['--env'].value}`
 });
 
-runCommand({
-   message: 'ENV setup',
-   command: `cd ${APP_NAME} && mv .env.template .env`,
-});
+fs.renameSync(`${APP_PATH}/.env.template`,`${APP_PATH}/.env`);
+log.ok();
+
+// runCommand({
+//    message: 'ENV setup',
+//    command: `cd ${APP_NAME} && mv .env.template .env`,
+// });
 
 // README Template
 log.step('Readme Setup');
