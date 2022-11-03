@@ -305,11 +305,6 @@ replaceInFile({
 fs.renameSync(`${APP_PATH}/.env.template`,`${APP_PATH}/.env`);
 log.ok();
 
-// runCommand({
-//    message: 'ENV setup',
-//    command: `cd ${APP_NAME} && mv .env.template .env`,
-// });
-
 // README Template
 log.step('Readme Setup');
 replaceInFile({
