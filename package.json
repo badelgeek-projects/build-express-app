@@ -1,6 +1,6 @@
 {
    "name": "build-express-app",
-   "version": "0.1.8",
+   "version": "0.1.9",
    "engines": {
       "npm": ">= 99.99.99",
       "yarn": ">= 99.99.99",
