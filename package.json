@@ -2,7 +2,9 @@
    "name": "build-express-app",
    "version": "0.1.1",
    "description": "Build Node.js + Express App",
-   "bin": "./bin.js",
+   "bin": {
+      "build-express-app": "bin.js"
+   },
    "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1"
    },
@@ -10,5 +12,31 @@
    "license": "ISC",
    "dependencies": {
       "chalk": "^4.1.2"
+   },
+   "main": "bin.js",
+   "devDependencies": {},
+   "repository": {
+      "type": "git",
+      "url": "git+https://github.com/badelgeek-projects/build-express-app.git"
+   },
+   "keywords": [
+      "node.js",
+      "express",
+      "create",
+      "app",
+      "app",
+      "create-express",
+      "generate",
+      "generator",
+      "node",
+      "boilerplate"
+   ],
+   "bugs": {
+      "url": "https://github.com/badelgeek-projects/build-express-app/issues"
+   },
+   "homepage": "https://github.com/badelgeek-projects/build-express-app#readme",
+   "engines": {
+      "npm": "please-use-npx",
+      "yarn": "please-use-npx"
    }
 }
