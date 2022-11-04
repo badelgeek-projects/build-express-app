@@ -5,7 +5,6 @@
 // display npm list
 // common files ? submodules ?
 // git repo : public ?
-// test windows ?
 // test if nodemon is installed ?
 
 //-------------
@@ -14,8 +13,10 @@
 const fs = require('fs');
 const path = require('path');
 const execSync = require('child_process').execSync;
-const chalk = require('chalk');
 const exit = require('process').exit;
+
+// Modules
+const log = require('./modules/log');
 
 //-------------
 // DECLARATIONS
@@ -101,7 +102,7 @@ const displayHelp = () => {
 }
 
 const checkOS = (os) => {
-   if (os === 'win32' && process.env.USER !== 'abdelkarimo') {
+   if (os === 'win32') {
       log.program('OS not supported yet : coming soon...');
       exit(0);
    }
@@ -118,7 +119,6 @@ const displayVersion = () => {
 }
 
 const runCommand = ({ command, message = false, stdout = false }) => {
-   //execSync(command, { stdio: 'inherit' });
    try {
       if (message) {
          log.step(message);
@@ -143,18 +143,6 @@ const runCommand = ({ command, message = false, stdout = false }) => {
 const replaceInFile = ({ file, originalRegex, newText, outputFile = file }) => {
    let data = fs.readFileSync(file, 'utf8').replace(originalRegex, newText);
    fs.writeFileSync(outputFile, data, 'utf8');
-}
-
-const log = {
-   DEBUG: false,
-   c: console.log,
-   debug: msg => (log.DEBUG) ? log.c(msg) : '',
-   error: msg => log.c(chalk.bold.red(msg ? '[ERROR] ' + msg : '[ERROR] ')),
-   info: msg => log.c(msg),
-   ok: msg => log.c(chalk.bold.green(msg ? '[OK] ' + msg : '[OK] ')),
-   program: msg => log.c(chalk.bold.blue(msg)),
-   step: msg => process.stdout.write(msg + ' : '),
-   warning: msg => log.c(chalk.bold.yellow(msg ? '[WARNING] ' + msg : '[WARNING] ')),
 }
 
 const handleViews = () => {
@@ -267,13 +255,13 @@ runCommand({
    message: 'Create App',
 });
 
-// Change Project name in package.
-// runCommand({
-//    command: `cd ${APP_NAME} && npm pkg set name='${APP_NAME}'`,
-//    message: 'App Setup',
-// });
+// App file
+log.step('APP Setup');
+fs.copyFileSync(`${NPX_TEMPLATES_PATH}/app.js`,`${APP_PATH}/app.js`);
+log.ok();
 
-log.step('App Setup');
+// JSON
+log.step('JSON Setup');
 replaceInFile({
    file: APP_JSON,
    originalRegex: /"name": ".*,/,
@@ -287,6 +275,8 @@ runCommand({
    command: `cd ${APP_NAME} && npm install`,
    message: 'Npm setup',
 });
+
+
 
 // Configure Env file
 log.step('Env Setup');
@@ -305,6 +295,9 @@ replaceInFile({
 fs.renameSync(`${APP_PATH}/.env.template`,`${APP_PATH}/.env`);
 log.ok();
 
+// Configure Views
+handleViews();
+
 // README Template
 log.step('Readme Setup');
 replaceInFile({
@@ -315,18 +308,10 @@ replaceInFile({
 });
 log.ok();
 
-// Configure Views
-handleViews();
-
 // clean repo .git
 log.step('Cleaning');
 fs.rmSync(`${APP_PATH}/.git/`, { recursive: true, force: true });
 log.ok();
-
-// runCommand({
-//    message: 'Cleaning',
-//    command: `cd ${APP_NAME} && rm -rf .git/`,
-// });
 
 // Start Express Server
 log.program('Configuration Finished, starting server...');
